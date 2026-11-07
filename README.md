@@ -54,6 +54,26 @@ The screenshots below were captured from the local application at `http://127.0.
   </tr>
 </table>
 
+### Landing page scroll-through
+
+The front page is a long-form experience, so the gallery includes multiple viewport captures rather than a single hero image. These show the visitor journey from the opening promise through the feature cards, workflow, editorial story, comparison, guidance panels, and final call-to-action.
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/home-hero.png" alt="Ascend landing page hero" width="420"><br><strong>01 · Hero</strong></td>
+    <td><img src="docs/screenshots/home-features.png" alt="Ascend landing page feature cards" width="420"><br><strong>02 · Feature cards</strong></td>
+    <td><img src="docs/screenshots/home-how.png" alt="Ascend landing page how it works" width="420"><br><strong>03 · How it works</strong></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/home-story.png" alt="Ascend landing page editorial story" width="420"><br><strong>04 · Editorial story</strong></td>
+    <td><img src="docs/screenshots/home-comparison.png" alt="Ascend landing page comparison" width="420"><br><strong>05 · Honest comparison</strong></td>
+    <td><img src="docs/screenshots/home-guides.png" alt="Ascend landing page decision and parent guides" width="420"><br><strong>06 · Guides</strong></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/home-cta.png" alt="Ascend landing page final call to action" width="420"><br><strong>07 · Final call-to-action</strong></td>
+  </tr>
+</table>
+
 ### Product and account surfaces
 
 These routes are protected by the original session flow. Without a seeded local session, the preview correctly lands on the sign-in boundary; the screenshots document that real route behavior.
