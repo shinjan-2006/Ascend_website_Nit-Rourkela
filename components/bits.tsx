@@ -242,7 +242,7 @@ export function Stepper({ step, total, label }: { step: number; total: number; l
 
 export function AppBar({ title, back, initials, alert, mode = "app" }: { title: string; back?: string; initials?: string; alert?: boolean; mode?: "app" | "onboard" | "parent" }) {
   return (
-    <header className="sticky top-0 z-20 flex h-[60px] items-center gap-1.5 border-b border-[rgba(20,26,34,0.06)] bg-[rgba(250,250,247,0.88)] pl-1.5 pr-2.5 backdrop-blur-[14px] backdrop-saturate-150">
+    <header className="sticky top-0 z-20 flex h-[60px] items-center gap-1.5 border-b border-[rgba(20,26,34,0.06)] bg-[rgba(250,250,247,0.88)] pl-1.5 pr-2.5 backdrop-blur-[14px] backdrop-saturate-150 md:mx-auto md:h-[92px] md:max-w-6xl md:border-b-0 md:bg-transparent md:pl-10 md:pr-10 md:pt-4 md:backdrop-blur-none">
       {back ? (
         <Link href={back} aria-label="Back" className="flex h-11 w-11 flex-none items-center justify-center rounded-[12px] text-ink hover:bg-black/5">
           <Icon name="back" />

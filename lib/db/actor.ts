@@ -22,7 +22,11 @@ export async function withActor<T>(actor: Actor, fn: (tx: Tx) => Promise<T>): Pr
   const role = actor.kind === "system" ? "system" : actor.kind === "staff" ? actor.role : "user";
   return getDb().transaction(async (tx) => {
     await tx.execute(sql`select set_config('app.user_id', ${userId}, true), set_config('app.role', ${role}, true)`);
-    await tx.execute(sql`set local role ascend_app`);
+    // PGlite is used for local development and does not persist PostgreSQL
+    // roles. The hosted Postgres path still switches to the restricted role;
+    // local mode keeps the same request-scoped settings without crashing the
+    // preview server before a page can render.
+    if (process.env.DATABASE_URL) await tx.execute(sql`set local role ascend_app`);
     return fn(tx);
   });
 }

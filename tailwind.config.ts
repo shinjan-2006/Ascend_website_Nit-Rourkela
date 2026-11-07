@@ -48,7 +48,7 @@ const config: Config = {
         ascStory: { from: { width: "0%" }, to: { width: "100%" } },
       },
       animation: {
-        "asc-in": "ascIn .3s ease both",
+        "asc-in": "ascIn .45s cubic-bezier(.22,1,.36,1) both",
         "asc-pop": "ascPop .45s ease both",
         "asc-fall": "ascFall 1.6s ease-in forwards",
         "asc-sheet": "ascSheet .28s ease both",

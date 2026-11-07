@@ -3,15 +3,24 @@
 @tailwind utilities;
 
 body {
-  background: #fafaf7;
-  color: #141a22;
+  background: #f7f7f2;
+  color: #0a0a0a;
+  overflow-x: hidden;
+  font-feature-settings: "cv11", "ss01", "tnum";
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.008em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 @layer components {
   .card {
-    @apply rounded-[16px] border border-[rgba(20,26,34,0.07)] bg-white shadow-card;
+    @apply rounded-[16px] border border-[rgba(10,10,10,0.08)] bg-white shadow-card;
   }
   .btn {
     @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-[14px] px-5 text-[15px] font-[650] transition duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-50;
@@ -20,7 +29,7 @@ body {
     @apply btn bg-teal text-white shadow-button hover:-translate-y-px hover:bg-teal-dark active:translate-y-0;
   }
   .btn-secondary {
-    @apply btn border border-[#CBD3CC] bg-white text-teal hover:-translate-y-px hover:border-teal active:translate-y-0;
+    @apply btn border border-[#C7C7C0] bg-white text-teal hover:-translate-y-px hover:border-teal active:translate-y-0;
   }
   .btn-amber {
     @apply btn bg-amber text-white hover:-translate-y-px hover:bg-amber-deep active:translate-y-0;
@@ -29,7 +38,7 @@ body {
     @apply min-h-[40px] text-[13px] font-semibold text-teal underline underline-offset-2;
   }
   .field {
-    @apply w-full rounded-[12px] border border-[#D5DBD5] bg-white px-3.5 py-3 text-[16px] text-ink outline-none transition placeholder:text-[#9AA3AE] focus:border-teal focus:ring-4 focus:ring-[rgba(15,92,77,0.12)];
+    @apply w-full rounded-[12px] border border-[#D1D1CA] bg-white px-3.5 py-3 text-[16px] text-ink outline-none transition placeholder:text-[#9AA3AE] focus:border-teal focus:ring-4 focus:ring-[rgba(10,10,10,0.1)];
   }
   .label {
     @apply mb-1.5 block text-[13px] font-semibold text-ink;
@@ -57,12 +66,123 @@ body {
   }
 }
 
+@keyframes ascScrollReveal {
+  from {
+    transform: translateY(24px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* App Router templates remount on navigation, giving every route a consistent entrance. */
+.page-transition {
+  min-height: 100%;
+  animation: pageEnter 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform;
+}
+
+/* Modern browsers reveal landing sections as they enter the viewport. */
+@supports (animation-timeline: view()) {
+  #ascend-home main > section:not(:first-child) {
+    animation: ascScrollReveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 28%;
+  }
+}
+
+#ascend-home h1,
+#ascend-home h2,
+#ascend-home h3 {
+  text-wrap: balance;
+  font-feature-settings: "cv11", "ss01";
+  font-variation-settings: "wght" 780;
+  font-weight: 780 !important;
+  letter-spacing: -0.052em;
+  text-rendering: geometricPrecision;
+}
+
+#ascend-home p,
+#ascend-home a,
+#ascend-home span,
+#ascend-home th,
+#ascend-home td {
+  font-variant-numeric: tabular-nums;
+}
+
+#ascend-home h1,
+#ascend-home h2 {
+  line-height: 0.98;
+}
+
+#ascend-home main > section:last-child {
+  border-top: 1px solid rgba(182, 255, 0, 0.14);
+  background:
+    radial-gradient(circle at 78% 20%, rgba(182, 255, 0, 0.14), transparent 24%),
+    linear-gradient(135deg, #07111f 0%, #0a1d23 52%, #0e2a22 100%) !important;
+}
+
 /* Respect users who ask the OS for less motion. */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *,
   *::before,
   *::after {
     animation-duration: 0.001s !important;
     transition-duration: 0s !important;
   }
+
+  .page-transition {
+    animation: none;
+  }
+}
+
+/* Lime visual language for the existing onboarding flow. The flow and APIs remain unchanged. */
+.onboard-shell .bg-teal {
+  background-color: #b6ff00 !important;
+}
+
+.onboard-shell .text-teal {
+  color: #5e8a00 !important;
+}
+
+.onboard-shell .border-teal {
+  border-color: #b6ff00 !important;
+}
+
+.onboard-shell .bg-mint {
+  background-color: #f1f7d6 !important;
+}
+
+.onboard-shell .border-mint-line {
+  border-color: #d8e9a9 !important;
+}
+
+.onboard-shell .btn-primary {
+  background-color: #b6ff00 !important;
+  color: #07111f !important;
+  box-shadow: 0 10px 24px rgba(126, 172, 0, 0.2);
+}
+
+.onboard-shell .btn-primary:hover {
+  background-color: #d0ff55 !important;
+}
+
+.onboard-shell .field:focus {
+  border-color: #b6ff00 !important;
+  box-shadow: 0 0 0 4px rgba(182, 255, 0, 0.2) !important;
 }

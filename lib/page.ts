@@ -7,6 +7,8 @@ import { nextStep, type Step } from "./services/onboarding";
 
 export const stepPath = (s: Step) => (s === "home" ? "/home" : `/start/${s.replace("_", "-")}`);
 
+const STEP_ORDER: Step[] = ["profile", "age_block", "kyc", "enrolment", "consent", "bureau", "cashflow", "builder", "limit", "ladder", "autopay", "home"];
+
 /** For the signed-in app screens: bring the line up to today, load state, or send to onboarding. */
 export async function loadApp(): Promise<{ userId: string; role: string; st: LineState }> {
   const s = await requireSession();
@@ -21,7 +23,10 @@ export async function loadStep<T>(allowed: Step[], fn: (tx: Tx, userId: string) 
   const s = await requireSession();
   return withActor(actorOf(s), async (tx) => {
     const step = await nextStep(tx, s.userId);
-    if (!allowed.includes(step)) redirect(stepPath(step));
+    const currentIndex = STEP_ORDER.indexOf(step);
+    const earliestAllowedIndex = Math.min(...allowed.map((candidate) => STEP_ORDER.indexOf(candidate)));
+    const isEarlierOnboardingStep = step !== "home" && currentIndex > earliestAllowedIndex;
+    if (!allowed.includes(step) && !isEarlierOnboardingStep) redirect(stepPath(step));
     return { userId: s.userId, step, data: await fn(tx, s.userId) };
   });
 }

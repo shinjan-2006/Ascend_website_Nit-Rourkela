@@ -66,12 +66,16 @@ const TABS: { href: string; label: string; icon: IconName }[] = [
 export function TabBar() {
   const path = usePathname();
   return (
-    <nav aria-label="Main" className="sticky bottom-0 z-20 grid h-[72px] grid-cols-5 border-t border-[rgba(20,26,34,0.06)] bg-white/95 px-1 pb-2.5 pt-1.5 shadow-[0_-8px_24px_-18px_rgba(20,26,34,0.25)] backdrop-blur-[14px]">
+    <nav aria-label="Main" className="sticky bottom-0 z-20 grid h-[72px] grid-cols-5 border-t border-[rgba(20,26,34,0.06)] bg-white/95 px-1 pb-2.5 pt-1.5 shadow-[0_-8px_24px_-18px_rgba(20,26,34,0.25)] backdrop-blur-[14px] md:fixed md:inset-y-0 md:left-0 md:z-30 md:flex md:h-screen md:w-[248px] md:flex-col md:items-stretch md:justify-start md:gap-2 md:border-r md:border-t-0 md:bg-[#0B1020] md:px-5 md:py-6 md:shadow-[18px_0_50px_-35px_rgba(7,9,20,.55)] md:backdrop-blur-none">
+      <div className="hidden border-b border-white/10 pb-7 md:flex md:items-center md:gap-3">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10"><Icon name="up" size={19} className="text-[#B9F7FF]" strokeWidth={2.2} /></span>
+        <div><p className="text-[15px] font-bold text-white">Ascend</p><p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white/40">Student credit</p></div>
+      </div>
       {TABS.map((t) => {
         const on = path === t.href;
         return (
-          <Link key={t.href} href={t.href} aria-current={on ? "page" : undefined} className={`flex min-h-[44px] flex-col items-center justify-center gap-[3px] text-[11px] ${on ? "font-bold text-teal" : "font-medium text-[#6B7482]"}`}>
-            <span className={`flex h-7 w-12 items-center justify-center rounded-full transition-colors ${on ? "bg-teal text-white" : "text-[#6B7482]"}`}>
+          <Link key={t.href} href={t.href} aria-current={on ? "page" : undefined} className={`flex min-h-[44px] flex-col items-center justify-center gap-[3px] text-[11px] ${on ? "font-bold text-teal" : "font-medium text-[#6B7482]"} md:flex-row md:justify-start md:gap-3 md:rounded-[14px] md:px-3 md:text-[14px] ${on ? "md:bg-white/10 md:text-white" : "md:text-white/55 md:hover:bg-white/5 md:hover:text-white"}`}>
+            <span className={`flex h-7 w-12 items-center justify-center rounded-full transition-colors md:h-10 md:w-10 md:flex-none ${on ? "bg-teal text-white" : "text-[#6B7482] md:text-white/55"}`}>
               <Icon name={t.icon} size={21} />
             </span>
             {t.label}

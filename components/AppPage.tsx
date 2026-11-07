@@ -9,11 +9,13 @@ import type { LineState } from "@/lib/services/view";
 export function AppPage({ st, title, back, children, trust = false }: { st: LineState; title: string; back?: string; children: ReactNode; trust?: boolean }) {
   return (
     <MobileFrame>
-      <AppBar title={title} back={back} initials={initials(st.user.fullName)} alert={st.unread > 0 || (st.slip?.step ?? 0) >= 2} />
-      <main className="flex flex-1 animate-asc-in flex-col gap-3.5 p-4">
-        {children}
-        {trust && <TrustStrip partner={st.c.partner_bank_name} interestPct={st.c.interest_on_time_pct} lateFee={st.c.late_fee} />}
-      </main>
+      <div className="md:pl-[248px]">
+        <AppBar title={title} back={back} initials={initials(st.user.fullName)} alert={st.unread > 0 || (st.slip?.step ?? 0) >= 2} />
+        <main className="flex flex-1 animate-asc-in flex-col gap-3.5 p-4 pb-24 md:mx-auto md:max-w-6xl md:px-10 md:py-10">
+          {children}
+          {trust && <TrustStrip partner={st.c.partner_bank_name} interestPct={st.c.interest_on_time_pct} lateFee={st.c.late_fee} />}
+        </main>
+      </div>
       <TabBar />
     </MobileFrame>
   );

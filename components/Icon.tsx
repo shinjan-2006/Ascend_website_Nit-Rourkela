@@ -152,7 +152,7 @@ export function Icon({ name, size = 22, className, strokeWidth = 1.8 }: { name: 
 export function Logo({ size = 28, light = false }: { size?: number; light?: boolean }) {
   return (
     <svg width={size} height={size} viewBox="0 0 28 28" aria-hidden="true">
-      <rect width="28" height="28" rx="8" fill={light ? "rgba(255,255,255,0.14)" : "#0F5C4D"} />
+      <rect width="28" height="28" rx="8" fill={light ? "rgba(255,255,255,0.14)" : "#0A0A0A"} />
       <path d="M7 20h4.5v-4.5H16V11h5" fill="none" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
