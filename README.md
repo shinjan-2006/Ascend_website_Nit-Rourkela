@@ -1,173 +1,149 @@
 # Ascend
 
-A small UPI credit line for students, built for CaseBlitz 2026. Students are approved on how money
-flows into their bank account (not on a credit score they don't have yet), get a limit of a share of
-that inflow, and grow it only by paying on time.
+Ascend is a student-first UPI credit line experience built around transparent cash flow, small limits, and on-time progress. This repository contains the complete local web application: the redesigned frontend, original backend workflows, sandbox providers, onboarding flow, lender tools, family view, and Android APK download.
 
-**Golden rule:** nothing is hard-coded. Every name, number, date, limit, fee and outcome comes from
-(a) what the user enters or uploads, (b) the engines computing from that data, or (c) the editable
-`config` table. The seed script inserts config rows only, never users or transactions.
+> Northbridge Bank is a fictional lender used for this prototype. KYC, Account Aggregator, bureau, UPI, and AutoPay are clearly labelled sandbox providers.
 
-> Northbridge Bank is a fictional lender. KYC, Account Aggregator, bureau, UPI and AutoPay run as
-> clearly-labelled **sandbox** providers that work only on data the user supplies.
+## What is in this repository
 
-## Local demo
+- Modern responsive landing page with lime, ink, and paper visual language
+- Smooth route transitions and scroll reveals
+- Student onboarding, sign-in, KYC, cash-flow, limit, and payment flows
+- Student dashboard, score, rewards, statement, slip, and settings pages
+- Parent guide and read-only Family View
+- Lender and admin surfaces with demo controls
+- Original database, services, business engines, API registry, and security model
+- Android APK available at [`public/downloads/ascend.apk`](public/downloads/ascend.apk)
 
-Open `http://localhost:3000` after starting the development server.
+## Local preview
 
-- **Students:** click *Get started*, enter any email, and use the sign-in code shown on screen
-  (sandbox, no real email is sent). KYC accepts any 12-digit Aadhaar and any 10-character PAN.
-- **Parents:** `/parents` (English and हिंदी) and the read-only `/family/<token>` link a student shares.
-- **Sandbox shop:** `/test-merchant` makes a QR you can pay from your Ascend line.
-- Code: https://github.com/SoAkeD1/ASCEND
-- Smoke test (signs in as admin, runs a full student journey on a demo user, then deletes it):
-  `node tests/live/journey.mjs http://localhost:3000 <admin-email>`
-
----
-
-## How the code is organised
-
-```
-lib/engine/      Pure business logic. No database, no UI. Every rule passed in from config.
-                 inflow · statementCsv · underwriting · limit · ladder · cycle · slipLadder ·
-                 hardship · kfs · rewards · riskBrake · revenue · moments · score · dates
-lib/config/      The config schema (Zod) and the loader that reads the config table
-lib/db/          Drizzle table definitions, the connection, and withActor (row-level security)
-lib/services/    Glue: read rows → call engines → write rows. One file per area
-                 onboarding · line · daily (the cron) · family · lender · admin · account · view
-lib/api/         registry.ts lists EVERY action: who may call it + its Zod input schema
-lib/providers/   Provider adapters (sandbox now, real later): OTP, KYC, UPI, AutoPay
-app/             Pages (Next.js App Router) and the API routes
-components/      React components rebuilt from the design export
-db/              Migrations (SQL), the config seed, and the setup script
-tests/           Vitest tests. Fixtures live ONLY here
-i18n/            English and Hindi text for /parents
-```
-
-A request flows like this: **page or API route → service → engine(s) → database**. The engines never
-touch the database, which is why they can be tested with plain numbers.
-
-### Security model
-
-- **Row Level Security.** Every request runs inside `withActor()` (`lib/db/actor.ts`), which opens a
-  transaction, switches to the restricted `ascend_app` database role, and sets `app.user_id` and
-  `app.role`. Policies in `db/migrations/0001_rls.sql` then let a student see only their own rows.
-  Staff (lender/admin) and the daily job see all rows. `tests/db/rls.test.ts` proves it.
-- **Sign-in.** Email one-time codes. Codes are stored as an HMAC hash, expire in 10 minutes, allow 5
-  tries, and are rate-limited per email and per IP (`lib/auth`). Sessions are a signed JWT in an
-  httpOnly cookie.
-- **Data minimisation.** Only the last 4 characters of PAN and Aadhaar are stored. Bank statement files
-  are discarded after parsing unless the user ticks "keep my file". Under-18 sign-ups keep nothing but
-  the come-back date. "Delete my data" wipes personal data and keeps anonymised loan records.
-- **No device permissions.** The app never asks for contacts, photos, SMS or location; the
-  `Permissions-Policy` header blocks them.
-- **Audit log.** Consent changes, KFS acceptance, limit changes, slip steps, config edits and demo
-  actions are written to `audit_log`.
-- **Family View** (`/family/[token]`) can only render the fields in `FamilyView`
-  (`lib/services/family.ts`): first name, payment status, streak, ladder progress and score stage. No
-  amounts, merchants or transactions, and revoking a link kills it at once.
-
-### Decisions worth knowing (and defending)
-
-| Decision | Why |
-|---|---|
-| Own email-OTP sign-in instead of Supabase Auth | Development and tests run with no external account; Supabase is used as the Postgres database. |
-| PGlite locally, Supabase Postgres in production | Same SQL and same security policies everywhere; nothing to install for local development. |
-| The daily job replays each day one at a time | Makes demo time travel exact: jumping 40 days runs all 40 days of cycle closes, AutoPay attempts and slip steps. |
-| Paying inside grace (step 3) keeps your limit; paying later starts a comeback | Grace means "₹0 fee, no punishment". Past grace the limit drops to `limit_min` and `comeback_cycles` clean cycles restore it. |
-| A ₹0 statement counts as on time | Nothing was owed, so nothing was missed. |
-| The risk brake has a hold zone | Between `dpd_target_pct` and `brake_pct` the current state is kept, so it doesn't flicker. `stop` also pauses new spends for that cohort. |
-| A due date is at least `reminder_before_days` after the statement | So the "due soon" reminder can never arrive before the bill exists. |
-| Config keys added beyond the brief | `min_age`, `bounce_keywords`, `interchange_pct`, `healthy_account_fee`, `graduation_fee`, `grievance_escalation_days`. All editable in Admin. |
-
----
-
-## Run it locally
-
-Needs Node.js 20 or newer.
+The project is intentionally local-only at this stage. No production deployment is configured by this README.
 
 ```bash
 npm install
-```
-
-```bash
-cp .env.example .env.local
-```
-
-Fill in `SESSION_SECRET` (any random string of 32+ characters), put your email in `ADMIN_EMAILS`, and
-set `DEMO_MODE=true` if you want the demo tools. Then create the local database and start the app:
-
-```bash
 npm run db:setup
-```
-
-```bash
 npm run dev
 ```
 
-Open http://localhost:3000. With `OTP_PROVIDER=sandbox`, the sign-in code is shown on screen with a
-"Sandbox · simulated provider" tag.
+Open [http://localhost:3000](http://localhost:3000). For the local sandbox, use `OTP_PROVIDER=sandbox`; the sign-in code is shown in the UI and no real email is sent.
 
-Run the tests (122 of them: every engine, the security policies and a full user journey):
+Useful commands:
 
 ```bash
+npm run lint
+npm run build
 npm test
 ```
 
-## Deploy (Supabase + Vercel)
+## Local preview gallery
 
-1. **Supabase:** create a project. Copy the connection string from Project Settings → Database →
-   Connection string → *Transaction pooler* (port 6543).
-2. **Create the tables and config** from your computer, pointing at Supabase:
-   `DATABASE_URL="postgres://…" npm run db:setup`
-3. **Vercel:** import this folder as a project. Add the environment variables from `.env.example`
-   (`DATABASE_URL`, `SESSION_SECRET`, `CRON_SECRET`, `ADMIN_EMAILS`, `DEMO_MODE`, and optionally
-   `APP_URL`, `OTP_PROVIDER`/`RESEND_API_KEY`/`EMAIL_FROM` for real emails).
-4. Deploy. `vercel.json` schedules `/api/cron/daily` once a day.
+The screenshots below were captured from the local application at `http://127.0.0.1:3000` after the current UI build. They are repository assets, not screenshots from a deployed site.
 
-## Demo mode
+### Public experience
 
-With `DEMO_MODE=true`, the Admin page (`/admin`) adds:
+<table>
+  <tr>
+    <td><img src="docs/screenshots/home.png" alt="Ascend landing page" width="420"><br><strong>Landing page</strong></td>
+    <td><img src="docs/screenshots/how-we-decide.png" alt="How Ascend decides" width="420"><br><strong>How we decide</strong></td>
+    <td><img src="docs/screenshots/parents.png" alt="Ascend parent guide" width="420"><br><strong>Parent guide</strong></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/signup.png" alt="Ascend sign up" width="420"><br><strong>Sign up</strong></td>
+    <td><img src="docs/screenshots/test-merchant.png" alt="Ascend sandbox merchant" width="420"><br><strong>Sandbox merchant</strong></td>
+    <td><img src="docs/screenshots/not-found.png" alt="Ascend not found page" width="420"><br><strong>Not found</strong></td>
+  </tr>
+</table>
 
-- **Create test user:** type any name, date of birth, monthly inflows, bounce yes/no and overdue loan.
-  Nothing is pre-filled; the user goes through the real engines.
-- **Time travel per user:** +1 day, +1 cycle, jump to the due date, or jump to any days-past-due.
-- **Force AutoPay failure**, **mark paid**, **inject DPD into a cohort** (to show the risk brake),
-  **reset demo data** (deletes only users made with "Create test user").
-- **Open as user:** view the app as a demo user; signing out returns to Admin.
+### Product and account surfaces
 
----
+These routes are protected by the original session flow. Without a seeded local session, the preview correctly lands on the sign-in boundary; the screenshots document that real route behavior.
 
-## Every library, API and dataset used
+<table>
+  <tr>
+    <td><img src="docs/screenshots/dashboard.png" alt="Dashboard route entry" width="320"><br><strong>Dashboard</strong></td>
+    <td><img src="docs/screenshots/family.png" alt="Family route entry" width="320"><br><strong>Family view</strong></td>
+    <td><img src="docs/screenshots/lender.png" alt="Lender route entry" width="320"><br><strong>Lender</strong></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/notifications.png" alt="Notifications route entry" width="320"><br><strong>Notifications</strong></td>
+    <td><img src="docs/screenshots/pay.png" alt="Pay route entry" width="320"><br><strong>Pay</strong></td>
+    <td><img src="docs/screenshots/rewards.png" alt="Rewards route entry" width="320"><br><strong>Rewards</strong></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/score.png" alt="Score route entry" width="320"><br><strong>Score</strong></td>
+    <td><img src="docs/screenshots/settings.png" alt="Settings route entry" width="320"><br><strong>Settings</strong></td>
+    <td><img src="docs/screenshots/settings-kfs.png" alt="Key Fact Statement route entry" width="320"><br><strong>Key Fact Statement</strong></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/slip.png" alt="Slip route entry" width="320"><br><strong>Slip</strong></td>
+    <td><img src="docs/screenshots/statement.png" alt="Statement route entry" width="320"><br><strong>Statement</strong></td>
+    <td><img src="docs/screenshots/start-profile.png" alt="Profile onboarding route entry" width="320"><br><strong>Profile onboarding</strong></td>
+  </tr>
+</table>
 
-**Runtime libraries**
+### Onboarding route coverage
 
-| Library | Version | Used for |
-|---|---|---|
-| Next.js | 14.2.35 | Web framework (App Router, server components, API routes) |
-| React / React DOM | 18 | UI |
-| Drizzle ORM | 0.45 | Type-safe SQL queries and table definitions |
-| postgres (postgres.js) | 3.4 | Postgres driver for production (Supabase) |
-| @electric-sql/pglite | 0.5 | Postgres compiled to WebAssembly for local development and tests |
-| Zod | 4 | Validates every API input and every config value |
-| jose | 6 | Signs and verifies the session token (JWT, HS256) |
-| qrcode | 1.5 | QR codes on the `/test-merchant` sandbox page |
+<table>
+  <tr>
+    <td><img src="docs/screenshots/start-age-block.png" alt="Age block onboarding" width="260"><br><strong>Age block</strong></td>
+    <td><img src="docs/screenshots/start-autopay.png" alt="AutoPay onboarding" width="260"><br><strong>AutoPay</strong></td>
+    <td><img src="docs/screenshots/start-builder.png" alt="Builder onboarding" width="260"><br><strong>Builder</strong></td>
+    <td><img src="docs/screenshots/start-bureau.png" alt="Bureau onboarding" width="260"><br><strong>Bureau</strong></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/start-cashflow.png" alt="Cash flow onboarding" width="260"><br><strong>Cash flow</strong></td>
+    <td><img src="docs/screenshots/start-consent.png" alt="Consent onboarding" width="260"><br><strong>Consent</strong></td>
+    <td><img src="docs/screenshots/start-enrolment.png" alt="Enrolment onboarding" width="260"><br><strong>Enrolment</strong></td>
+    <td><img src="docs/screenshots/start-kyc.png" alt="KYC onboarding" width="260"><br><strong>KYC</strong></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/start-ladder.png" alt="Ladder onboarding" width="260"><br><strong>Ladder</strong></td>
+    <td><img src="docs/screenshots/start-limit.png" alt="Limit onboarding" width="260"><br><strong>Limit</strong></td>
+    <td><img src="docs/screenshots/start-profile.png" alt="Profile onboarding" width="260"><br><strong>Profile</strong></td>
+    <td><img src="docs/screenshots/signup.png" alt="Sign-in boundary" width="260"><br><strong>Sign-in boundary</strong></td>
+  </tr>
+</table>
 
-**Development libraries:** TypeScript 5, Tailwind CSS 3.4, PostCSS 8, ESLint 8 with
-eslint-config-next, Vitest 2 (tests), drizzle-kit 0.31 (generates SQL migrations), tsx 4 (runs the
-setup script), and the @types packages for Node, React and qrcode.
+## Architecture
 
-**Fonts:** Inter, from Google Fonts via `next/font`.
+```text
+app/             Next.js App Router pages and API routes
+components/      Shared UI, shell, icons, and client interactions
+lib/engine/      Pure business rules with no database access
+lib/config/      Editable configuration schema and loader
+lib/db/          Drizzle schema, database connection, and actor context
+lib/services/    Application services for onboarding, line, family, lender, and admin
+lib/api/         Typed API action registry and validation
+lib/providers/   Sandbox adapters for OTP, KYC, UPI, and AutoPay
+db/              Migrations, seed configuration, and setup script
+tests/           Unit, database, and journey tests
+public/          Editorial assets, screenshots, and the Android APK
+```
 
-**Services and APIs**
+The request path remains:
 
-| Service | Status | Used for |
-|---|---|---|
-| Supabase (Postgres) | Production database | All data, with Row Level Security |
-| Vercel + Vercel Cron | Hosting | Runs the app and the daily job |
-| Resend email API | Optional (`OTP_PROVIDER=resend`) | Sends sign-in codes by email |
-| Twilio SMS API | Optional (`AUTH_CHANNEL=sms`, `OTP_PROVIDER=twilio`) | Sends sign-in codes by SMS |
-| WhatsApp share link (`wa.me`) | Link only, no API key | Lets a student share the parent explainer or Family View link |
-| DigiLocker, Account Aggregator, credit bureau, NPCI UPI, UPI AutoPay | **Sandbox adapters only** | Simulated on user-supplied data and labelled as such |
+```text
+page or API route → service → engine(s) → database
+```
 
-**Datasets:** none. The app holds only data its users enter or upload. Test fixtures live in `tests/`.
+The engines stay database-independent so the core rules remain testable with plain inputs.
+
+## Backend and security preserved
+
+- Row-level security is applied through `withActor()` and the restricted `ascend_app` role
+- Sessions use signed JWT cookies and email one-time codes
+- PAN and Aadhaar are stored only as masked trailing characters
+- The app does not request contacts, photos, SMS, or location permissions
+- Family View exposes only its explicitly allowed read-only fields
+- Sandbox providers remain labelled and use only supplied demo data
+
+## Current validation
+
+The local project currently passes:
+
+```text
+npm run lint
+npm run build
+```
+
+Deployment is intentionally left for a later step when the repository owner requests it.
