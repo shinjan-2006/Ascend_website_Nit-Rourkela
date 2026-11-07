@@ -11,17 +11,17 @@ that inflow, and grow it only by paying on time.
 > Northbridge Bank is a fictional lender. KYC, Account Aggregator, bureau, UPI and AutoPay run as
 > clearly-labelled **sandbox** providers that work only on data the user supplies.
 
-## Live demo
+## Local demo
 
-**https://ascend-three-tan.vercel.app** (hosted on Vercel, database on Supabase)
+Open `http://localhost:3000` after starting the development server.
 
 - **Students:** click *Get started*, enter any email, and use the sign-in code shown on screen
   (sandbox, no real email is sent). KYC accepts any 12-digit Aadhaar and any 10-character PAN.
 - **Parents:** `/parents` (English and हिंदी) and the read-only `/family/<token>` link a student shares.
 - **Sandbox shop:** `/test-merchant` makes a QR you can pay from your Ascend line.
 - Code: https://github.com/SoAkeD1/ASCEND
-- Live smoke test (signs in as admin, runs a full student journey on a demo user, then deletes it):
-  `node tests/live/journey.mjs https://ascend-three-tan.vercel.app <admin-email>`
+- Smoke test (signs in as admin, runs a full student journey on a demo user, then deletes it):
+  `node tests/live/journey.mjs http://localhost:3000 <admin-email>`
 
 ---
 

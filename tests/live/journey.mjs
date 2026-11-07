@@ -1,4 +1,4 @@
-// Live smoke test: node tests/live/journey.mjs https://your-site.vercel.app admin@email
+// Smoke test: node tests/live/journey.mjs <base-url> admin@email
 // Signs in as admin (sandbox code), creates a demo user through the real engines, walks the whole
 // journey over HTTP, checks the lender dashboard and the family view, then deletes the demo user.
 const BASE = process.argv[2];
