@@ -3,11 +3,9 @@ services:
     name: ascend-website
     runtime: node
     plan: free
-    branch: main
     buildCommand: npm ci && npm run build
     startCommand: npm run db:setup && npm run start
     healthCheckPath: /
-    autoDeployTrigger: commit
     envVars:
       - key: NODE_VERSION
         value: "20"
