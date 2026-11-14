@@ -3,7 +3,6 @@ services:
     name: ascend-nit-rourkela
     runtime: node
     plan: free
-    region: singapore
     buildCommand: npm ci && npm run build
     startCommand: npm run db:setup && npm run start
     healthCheckPath: /
@@ -30,4 +29,3 @@ services:
 databases:
   - name: ascend-db
     plan: free
-    region: singapore
