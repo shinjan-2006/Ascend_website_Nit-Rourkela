@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: ascend-website
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: npm ci && npm run build
+    startCommand: npm run db:setup && npm run start
+    healthCheckPath: /
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: PGLITE_DIR
+        value: /tmp/ascend-pglite
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: CRON_SECRET
+        generateValue: true
+      - key: DEMO_MODE
+        value: "false"
+      - key: AUTH_CHANNEL
+        value: email
+      - key: OTP_PROVIDER
+        value: sandbox
+      - key: APP_TIMEZONE
+        value: Asia/Kolkata
